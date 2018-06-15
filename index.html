@@ -104,7 +104,11 @@
         var isAndroid = false;
         function init() {
             console.log('init');
-            if(device.platform.toLowerCase() === "android") isAndroid = true;
+            if(device.platform.toLowerCase() === "android"){
+                isAndroid = true;
+            }
+            media = new Media("http://www.largesound.com/ashborytour/sound/brobob.mp3");
+            media.play({ numberOfLoops: 1 });
         }
         //AngularJS Material Script
         var app = angular.module("myApp", ["ngMaterial", "ngMessages"]);
@@ -119,8 +123,6 @@
             $scope.counter = 0;
             $scope.start = function(){
                 $scope.counter++;
-                media = new Media("http://www.largesound.com/ashborytour/sound/brobob.mp3");
-                media.play({ numberOfLoops: 1 });
             };
             $scope.refresh = function(){
                 $scope.counter--;
