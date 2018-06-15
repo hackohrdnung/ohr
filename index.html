@@ -107,8 +107,6 @@
             if(device.platform.toLowerCase() === "android"){
                 isAndroid = true;
             }
-            myMedia = new Media("https://www.mediacollege.com/audio/tone/files/1kHz_44100Hz_16bit_30sec.mp3");
-            myMedia.play({ numberOfLoops: 1 });
         }
         //AngularJS Material Script
         var app = angular.module("myApp", ["ngMaterial", "ngMessages"]);
@@ -123,9 +121,12 @@
             $scope.counter = 0;
             $scope.start = function(){
                 $scope.counter++;
+                myMedia = new Media("https://www.mediacollege.com/audio/tone/files/1kHz_44100Hz_16bit_30sec.mp3");
+                myMedia.play({ numberOfLoops: 1 });
             };
             $scope.refresh = function(){
                 $scope.counter--;
+                myMedia.stop();
             };
         });
     </script>
