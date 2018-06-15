@@ -12,14 +12,22 @@
                                    minimum-scale     = 1, 
                                    width             = device-width"/>
     <title>Gehörschutz Check</title>
+    <!-- Externe Styles und Scripts  -->
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
     <script src="cordova.js"></script>
+    <!-- Interne Styles und Scripts  -->
+    <style>
+        .title{
+            margin-top: 50px;
+        }
+    </style>
     <script>
         var app = angular.module("myApp", ['ngMaterial', 'ngMessages']);
         app.controller("myCtrl", function($scope){
+            $scope.counter = 0;
             $scope.start = function(){
-                alert("Gestartet");
+                $scope.counter++;
             };
         });
     </script>
@@ -31,7 +39,15 @@
 <body ng-app="myApp" ng-controller="myCtrl">
 
     <md-content>
-        <md-button ng-click="start()">Start</md-button>
+
+        <div layout="row" layout-align="center" class="title">
+            <md-button ng-click="start()">Start</md-button>
+        </div>
+
+        <div layout="row" layout-align="center">
+            <p>Klicks: {{counter}}</p>
+        </div>
+    
     </md-content>
 
 </body>
