@@ -18,16 +18,101 @@
     <script src="cordova.js"></script>
     <!-- Interne Styles und Scripts  -->
     <style>
-        .title{
-            margin-top: 50px;
+        @font-face{
+            font-family:        "Material Icons";
+            font-style:         normal;
+            font-weight:        400;
+            src:                url(icons.woff) format("woff");
+        }
+        @font-face{
+            font-family:        "Roboto";
+            font-style:         normal;
+            font-weight:        300;
+            src:                url(root/fontR300.woff) format("woff");
+        }
+        @font-face{
+            font-family:        "Roboto";
+            font-style:         normal;
+            font-weight:        400;
+            src:                url(root/fontR400.woff) format("woff");
+        }
+        @font-face{
+            font-family:        "Roboto";
+            font-style:         italic;
+            font-weight:        400;
+            src:                url(root/fontR400i.woff) format("woff");
+        }
+        @font-face{
+            font-family:        "Roboto";
+            font-style:         normal;
+            font-weight:        500;
+            src:                url(root/fontR500.woff) format("woff");
+        }
+        @font-face{
+            font-family:        "Roboto";
+            font-style:         normal;
+            font-weight:        700;
+            src:                url(root/fontR700.woff) format("woff");
+        }
+        .header{
+            margin:             0px;
+            padding:            0px;
+        }
+        .material-icons{
+            font-family:        "Material Icons";
+            font-weight:        normal;
+            font-style:         normal;
+            font-size:          36px; 
+            display:            inline-block;
+            line-height:        1;
+            text-transform:     none;
+            letter-spacing:     normal;
+            word-wrap:          normal;
+            vertical-align:     top;
+            padding-bottom:     4px;
+            padding-top:        4px;
+            white-space:        nowrap;
+            direction:          ltr;
+            -webkit-font-smoothing:  antialiased;
+            text-rendering:          optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings:   "liga";
+        }
+        .narrowButton{
+            margin:             0px;
+            max-width:          60px;
+            min-width:          60px;
+            margin:             0px;
+            width:              60px;
+        }
+        .unters{
+            margin-top:         50px;
+        }
+        h1{
+            font-size:          1.3em;
+            font-weight:        400;
+            margin:             0px;
+            padding:            0px;
+            padding-top:        10px;
+            text-align:         center;
         }
     </style>
     <script>
-        var app = angular.module("myApp", ['ngMaterial', 'ngMessages']);
+        var app = angular.module("myApp", ["ngMaterial", "ngMessages"]);
+        app.config(function($mdThemingProvider){
+            $mdThemingProvider
+                .theme("default")
+                //.dark()
+                .primaryPalette("orange")
+                .accentPalette("cyan");
+        });
         app.controller("myCtrl", function($scope){
             $scope.counter = 0;
             $scope.start = function(){
                 $scope.counter++;
+            };
+            $scope.refresh = function(){
+                $scope.counter--;
             };
         });
     </script>
@@ -37,19 +122,39 @@
 <!-- Body                                                                      -->
 <!--************************************************************************** -->
 <body ng-app="myApp" ng-controller="myCtrl">
+<md-content>
 
-    <md-content>
-
-        <div layout="row" layout-align="center" class="title">
-            <md-button ng-click="start()">Start</md-button>
+    <div layout="row" layout-align="center" class="header">
+        <div style="width: 60px;">
+            <md-button aria-label = "Refresh"
+                       class      = "md-primary narrowButton"
+                       ng-click   = "refresh()">
+                <i class="material-icons">replay</i>
+            </md-button>
         </div>
-
-        <div layout="row" layout-align="center">
-            <p>Klicks: {{counter}}</p>
+        <div layout-align="center" style="width: calc(100% - 120px)">
+            <h1>Gehörschutz Check</h1>
         </div>
+        <div style="width: 60px;">
+            <md-button aria-label = "Refresh"
+                       class      = "md-primary narrowButton"
+                       ng-click   = "refresh()">
+                <i class="material-icons">help_outline</i>
+            </md-button>
+        </div>
+    </div>
+
+    <md-divider></md-divider>
+
+    <div layout="row" layout-align="center" class="unters">
+        <md-button ng-click="start()" class="md-primary">Start</md-button>
+    </div>
+
+    <div layout="row" layout-align="center">
+        <p>Klicks: {{counter}}</p>
+    </div>
     
-    </md-content>
-
+</md-content>
 </body>
 
 </html>
