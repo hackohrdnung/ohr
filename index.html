@@ -6,24 +6,20 @@
 <!--************************************************************************** -->
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <meta name="viewport" content="user-scalable     = no, 
+                                   initial-scale     = 1, 
+                                   maximum-scale     = 1, 
+                                   minimum-scale     = 1, 
+                                   width             = device-width"/>
     <title>Gehörschutz Check</title>
-    <!-- Scripts -->
+    <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
     <script src="cordova.js"></script>
     <script>
-        var app = angular.module("myApp", []);
-        app.controller("myCtrl", function ($scope) {
-            $scope.message = "";
-            $scope.left = function () {
-                return 100 - $scope.message.length;
-            };
-            $scope.clear = function () {
-                alert("Gelöscht");
-                $scope.message = "";
-            };
-            $scope.save = function () {
-                alert("Gespeichert");
+        var app = angular.module("myApp", ['ngMaterial', 'ngMessages']);
+        app.controller("myCtrl", function($scope){
+            $scope.start = function(){
+                alert("Gestartet");
             };
         });
     </script>
@@ -34,18 +30,9 @@
 <!--************************************************************************** -->
 <body ng-app="myApp" ng-controller="myCtrl">
 
-    <h2>Testtitel</h2>
-
-    <textarea ng-model="message" cols="40" rows="10"></textarea>
-
-    <p>
-        <button ng-click="save()">Save</button>
-        <button ng-click="clear()">Clear</button>
-    </p>
-
-    <p>Number of characters left:
-        <span ng-bind="left()"></span>
-    </p>
+    <md-content>
+        <md-button ng-click="start()">Start</md-button>
+    </md-content>
 
 </body>
 
