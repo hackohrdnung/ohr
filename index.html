@@ -99,9 +99,12 @@
     </style>
     <script>
         //Media Plugin fertig laden
-        document.addEventListener("deviceready", onDeviceReady, false);
-        function onDeviceReady() {
-            console.log(Media);
+        document.addEventListener('deviceready', init, false);
+        var media;
+        var isAndroid = false;
+        function init() {
+            console.log('init');
+            if(device.platform.toLowerCase() === "android") isAndroid = true;
         }
         //AngularJS Material Script
         var app = angular.module("myApp", ["ngMaterial", "ngMessages"]);
@@ -116,8 +119,8 @@
             $scope.counter = 0;
             $scope.start = function(){
                 $scope.counter++;
-                var myMedia = new Media("http://www.largesound.com/ashborytour/sound/brobob.mp3");
-                myMedia.play({ numberOfLoops: 1 });
+                media = new Media("http://www.largesound.com/ashborytour/sound/brobob.mp3");
+                media.play({ numberOfLoops: 1 });
             };
             $scope.refresh = function(){
                 $scope.counter--;
