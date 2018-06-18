@@ -95,7 +95,7 @@
             width:              calc(100% - 120px);
         }
         .unters{
-            margin-top:         50px;
+            margin-top:         10px;
         }
         h1{
             font-size:          1.3em;
@@ -113,6 +113,20 @@
             padding-left:       10px;
             padding-top:        12px;
             text-align:         left;
+        }
+        md-slider[md-discrete]:not([disabled]):focus .md-sign,
+        md-slider[md-discrete]:not([disabled]):focus .md-sign:after,
+        md-slider[md-discrete]:not([disabled]).active .md-sign,
+        md-slider[md-discrete]:not([disabled]).active .md-sign:after {
+          opacity: 1;
+          -webkit-transform: translate3d(0, 0, 0) scale(1);
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        md-slider[md-discrete] .md-sign,
+        md-slider[md-discrete] .md-sign:after {
+          opacity: 1;
+          -webkit-transform: translate3d(0, 0, 0) scale(1);
+          transform: translate3d(0, 0, 0) scale(1);
         }
     </style>
     <script>
@@ -134,17 +148,10 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
-            $scope.date1 = "";
-            $scope.date2 = "";
-            
-
-            $scope.counter = 0;
-            $scope.media   = null;
-            $scope.volume  = 100;
+            $scope.media = null;
             $scope.new = function(){
-                $scope.stop();
-                $scope.counter = 0;
-                $scope.volume  = 100;
+                $scope.stopCheckOS();
+                $scope.initCheckOS();
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -160,46 +167,78 @@
                 if(isAndroid){
                     path = "/android_asset/www/";
                 } 
-                //path = cordova.file.applicationDirectory + 'www/'
-                //path = path.substr( path, path.length - 23 );
-                //path = path + 'audio/'+audiofile+'.mp3';
                 return 'file://' + path;
             }
-            $scope.start = function(){
+            //1sek Sound in gewünschter Lautstärke wiedergeben
+            $scope.playSound = function(volume){
                 try{
-                    $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
-                        function(){console.log("Success")}, 
-                        function(error){console.log("Error: " + JSON.stringify(error))});
+                    if($scope.media==null){
+                        $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
+                            function(){console.log("Success")}, 
+                            function(error){console.log("Error: " + JSON.stringify(error))});
+                    }
                 }catch(error){
                     console.log("Keine Media-Bibliothek gefunden")
                 }
                 if($scope.media){
-                    $scope.date1 = new Date();
+                    $scope.media.setVolume(volume / 100);
                     $scope.media.play();
-                    $scope.date2 = new Date();
-                    $scope.counter++;
                 }
             };
-            $scope.stop = function(){
+
+            //------------------------------------------------------------
+            //Messung ohne Gehörschutz
+            //------------------------------------------------------------
+            $scope.initCheckOS = function(){
+                //Lautstärke
+                $scope.volumeOS = 100;
+                //Lautstärke Backup (Wenn der Benuzter den Slider verschiebt...)
+                $scope.volumeOSBackup = $scope.volumeOS;
+                //Läuft die Prüfseqenz gearde?
+                $scope.isCheckingOS = false;
+            }
+            $scope.initCheckOS();
+            //Prüfsequenz starten
+            $scope.startCheckOS = function() {
+                //Initialisieren
+                $scope.initCheckOS();
+                //Setzen, dass die Prüfsequenz jetzt dann grad läuft
+                $scope.isCheckingOS = true;
+                //Prüfsequenz durchführen
+                $scope.checkOS();
+            };
+            //Prüfsequenz stoppen
+            $scope.stopCheckOS = function() {
+                //Setzen, dass die Prüfsequenz gestoppt werden soll
+                $scope.isCheckingOS = false;
                 if($scope.media){
                     $scope.media.stop();
                 }
             };
-            $scope.volumeUp = function(){
-                if($scope.media){
-                    if($scope.volume<100){
-                        $scope.volume+=5;
+            //Prüfsequenz durchführen
+            $scope.checkOS = function() {
+                //Rekursiv die Lautstärke schrittweise reduzieren
+                setTimeout(function() {
+                    //Soll die Prüfsequenz unterbrochen werden?
+                    if ($scope.isCheckingOS === false) {
+                        return;
                     }
-                    $scope.media.setVolume($scope.volume / 100);
-                }
+                    //Lautstärke um einen Schritt reduzieren
+                    $scope.decreaseOS();
+                    $scope.playSound($scope.volumeOS);
+                    //UI von Model aktualisieren
+                    $scope.$apply();
+                    //Rekursiv die Lautstärke um den nächsten Schritt reduzieren
+                    $scope.checkOS();
+                }, 2000);
             };
-            $scope.volumeDown = function(){
-                if($scope.media){
-                    if($scope.volume>0){
-                        $scope.volume-=5;
-                    }
-                    $scope.media.setVolume($scope.volume / 100);
-                }
+            $scope.decreaseOS = function() {
+                $scope.volumeOS -= 10;
+                $scope.volumeOSBackup = $scope.volumeOS;
+            };
+            //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten Wert zurücksetzen
+            $scope.onChangeSliderOS = function() {
+                $scope.volumeOS = $scope.volumeOSBackup;
             };
         });
     </script>
@@ -230,35 +269,35 @@
         </div>
     </div>
     <md-divider></md-divider>
+    <br/><br/>
 
     <!--********************************************************************** -->
     <!-- Body: Ohne Gehörschutz                                                -->
     <!--********************************************************************** -->
+    <div layout="row" layout-align="center">
+        <md-slider id         = "slider" 
+                   aria-label = "volumeOS"
+                   ng-model   = "volumeOS"
+                   ng-change  = "onChangeSliderOS()"
+                   class      = "md-primary" 
+                   style      = "width: 300px;" 
+                   min        = "0"
+                   max        = "100" 
+                   step       = "10"
+                   md-discrete> 
+        </md-slider>
+    </div>
+    
+    
     <div layout="row" layout-align="center" class="unters">
-        <md-button ng-click="start()" class="md-primary">Start</md-button>
+        <md-button ng-click="startCheckOS()" class="md-primary">Start</md-button>
     </div>
     <div layout="row" layout-align="center" class="unters">
-        <md-button ng-click="stop()" class="md-primary">Stop</md-button>
-    </div>
-    <div layout="row" layout-align="center" class="unters">
-        <md-button ng-click="volumeUp()" class="md-primary">Lauter</md-button>
-    </div>
-    <div layout="row" layout-align="center" class="unters">
-        <md-button ng-click="volumeDown()" class="md-primary">Leiser</md-button>
+        <md-button ng-click="stopCheckOS()" class="md-primary">Stop</md-button>
     </div>
     <md-divider></md-divider>
-
     <div layout="row" layout-align="center">
-        <p>Lautstärke: {{volume / 100}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>Abspiel Counter: {{counter}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>Timestamp Before: {{date1}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>Timestamp After: {{date2}}</p>
+        <p>Lautstärke: {{volumeOS}}</p>
     </div>
 </md-content>
 </body>
