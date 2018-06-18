@@ -168,15 +168,6 @@
             $scope.new = function(){
                 $scope.stopCheckOS();
                 $scope.initCheckOS();
-                try{
-                    if($scope.media==null){
-                        $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
-                            function(){console.log("Success")}, 
-                            function(error){console.log("Error: " + JSON.stringify(error))});
-                    }
-                }catch(error){
-                    console.log("Keine Media-Bibliothek gefunden")
-                }
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -198,9 +189,8 @@
             //1sek Sound in gewünschter Lautstärke wiedergeben
             $scope.playSound = function(volume){
                 if($scope.media){
-                    $scope.media.setVolume(volume / 100);
-                    console.log("Volume: " + (volume / 100));
-                    //$scope.media.setVolume('1.0');
+                    //$scope.media.setVolume(volume / 100);
+                    $scope.media.setVolume(0.05);
                     $scope.media.play();
                 }
             };
@@ -215,6 +205,16 @@
                 $scope.volumeOSBackup = $scope.volumeOS;
                 //Neue Sequenz starten
                 $scope.sequenceID++;
+                //MP3 Datei vorbereiten
+                try{
+                    if($scope.media==null){
+                        $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
+                            function(){console.log("Success")}, 
+                            function(error){console.log("Error: " + JSON.stringify(error))});
+                    }
+                }catch(error){
+                    console.log("Keine Media-Bibliothek gefunden")
+                }
             }
             $scope.initCheckOS();
             //Prüfsequenz starten
