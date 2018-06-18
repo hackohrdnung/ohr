@@ -134,12 +134,17 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
+            $scope.date1 = "";
+            $scope.date2 = "";
+            
+
             $scope.counter = 0;
             $scope.media   = null;
             $scope.volume  = 100;
             $scope.new = function(){
                 $scope.stop();
-                $scope.volume = 100;
+                $scope.counter = 0;
+                $scope.volume  = 100;
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -169,8 +174,10 @@
                     console.log("Keine Media-Bibliothek gefunden")
                 }
                 if($scope.media){
-                    $scope.media.play({ numberOfLoops: 3 });
-                    $scope.counter = 3;
+                    $scope.date1 = new Date();
+                    $scope.media.play();
+                    $scope.date2 = new Date();
+                    $scope.counter++;
                 }
             };
             $scope.stop = function(){
@@ -239,7 +246,6 @@
     <div layout="row" layout-align="center" class="unters">
         <md-button ng-click="volumeDown()" class="md-primary">Leiser</md-button>
     </div>
-    <br/><br/><br/>
     <md-divider></md-divider>
 
     <div layout="row" layout-align="center">
@@ -248,7 +254,12 @@
     <div layout="row" layout-align="center">
         <p>Abspiel Counter: {{counter}}</p>
     </div>
-    
+    <div layout="row" layout-align="center">
+        <p>Timestamp Before: {{date1}}</p>
+    </div>
+    <div layout="row" layout-align="center">
+        <p>Timestamp After: {{date2}}</p>
+    </div>
 </md-content>
 </body>
 
