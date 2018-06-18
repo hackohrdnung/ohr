@@ -151,7 +151,8 @@
             }
             $scope.start = function(){
                 try{
-                    myMedia = new Media("4khz.mp3");
+                    myMedia = new Media("https://www.mediacollege.com/audio/tone/files/1kHz_44100Hz_16bit_30sec.mp3");
+                    //myMedia = new Media("4khz.mp3");
                 }catch(error){
                     console.log("Keine Media-Bibliothek gefunden")
                 }
