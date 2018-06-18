@@ -136,10 +136,10 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
-            $scope.volume = 0.0;
+            $scope.volume = 0;
             $scope.new = function(){
                 $scope.stop();
-                $scope.volume = 0.0;
+                $scope.volume = 0;
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -152,7 +152,7 @@
             }
             $scope.start = function(){
                 try{
-                    myMedia = new Media("4khz.wav");
+                    myMedia = new Media("4khz.mp3");
                 }catch(error){
                     console.log("Keine Media-Bibliothek gefunden")
                 }
@@ -166,13 +166,19 @@
                 }
             };
             $scope.volumeUp = function(){
-                if($scope.volume<1.0){
-                    $scope.volume+=0.1;
+                if($scope.volume<100){
+                    $scope.volume+=5;
+                }
+                if(myMedia){
+                    myMedia.setVolume($scope.volume);
                 }
             };
             $scope.volumeDown = function(){
-                if($scope.volume>0.0){
-                    $scope.volume-=0.1;
+                if($scope.volume>0){
+                    $scope.volume-=5;
+                }
+                if(myMedia){
+                    myMedia.setVolume($scope.volume);
                 }
             };
         });
@@ -224,7 +230,7 @@
     <md-divider></md-divider>
 
     <div layout="row" layout-align="center">
-        <p>Klicks: {{counter}}</p>
+        <p>Lautstärke: {{volume / 100}}</p>
     </div>
     
 </md-content>
