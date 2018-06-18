@@ -121,7 +121,6 @@
         var myMedia;
         var isAndroid = false;
         function init() {
-            console.log('init');
             if(device.platform.toLowerCase() === "android"){
                 isAndroid = true;
             }
@@ -136,10 +135,10 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
-            $scope.volume = 0;
+            $scope.volume = 100;
             $scope.new = function(){
                 $scope.stop();
-                $scope.volume = 0;
+                $scope.volume = 100;
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -166,19 +165,19 @@
                 }
             };
             $scope.volumeUp = function(){
-                if($scope.volume<100){
-                    $scope.volume+=5;
-                }
                 if(myMedia){
-                    myMedia.setVolume($scope.volume);
+                    if($scope.volume<100){
+                        $scope.volume+=5;
+                    }
+                    myMedia.setVolume("1.0");
                 }
             };
             $scope.volumeDown = function(){
-                if($scope.volume>0){
-                    $scope.volume-=5;
-                }
                 if(myMedia){
-                    myMedia.setVolume($scope.volume);
+                    if($scope.volume>0){
+                        $scope.volume-=5;
+                    }
+                    myMedia.setVolume("0.5");
                 }
             };
         });
