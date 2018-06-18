@@ -246,25 +246,27 @@
                 }
                 //Wiederholung übernehmen
                 $scope.repeatID = myRepeatID;
+                //Rekursiv 3mal nacheinander einen Ton in der gleichen Lautstärke
+                //ausgeben und dann die Lautstärke um den nächsten Schritt reduzieren
+                $scope.repeatID++;
+                setTimeout(function(){
+                    $scope.$apply();
+                }, 50);
+                $scope.playSound($scope.volumeOS);
                 //Rekursiv die Lautstärke schrittweise reduzieren
-                setTimeout(function() {
+                setTimeout(function(){
                     //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
                     if($scope.sequenceID!=mySequenceID){
                         return;
                     }
-                    //Rekursiv 3mal nacheinander einen Ton in der gleichen Lautstärke
-                    //ausgeben und dann die Lautstärke um den nächsten Schritt reduzieren
-                    $scope.playSound($scope.volumeOS);
                     if($scope.repeatID>2){
                         if($scope.volumeOS<=0){
-                            return;
+                                    return;
                         } 
                         $scope.decreaseOS();
-                        $scope.$apply();
-                        $scope.repeatID = 0;    
+                        $scope.repeatID = 0;
+                        $scope.$apply();    
                     }
-                    $scope.repeatID++;
-                    $scope.$apply();
                     $scope.checkOS(mySequenceID, $scope.repeatID);
                 }, 2000);
             };
