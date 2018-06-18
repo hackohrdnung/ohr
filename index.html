@@ -198,8 +198,9 @@
             //1sek Sound in gewünschter Lautstärke wiedergeben
             $scope.playSound = function(volume){
                 if($scope.media){
-                    //$scope.media.setVolume(volume / 100);
-                    $scope.media.setVolume('1.0');
+                    $scope.media.setVolume(volume / 100);
+                    console.log("Volume: " + (volume / 100));
+                    //$scope.media.setVolume('1.0');
                     $scope.media.play();
                 }
             };
