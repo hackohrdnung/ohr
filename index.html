@@ -136,9 +136,10 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
-            $scope.counter = 0;
+            $scope.volume = 0.0;
             $scope.new = function(){
-                $scope.counter = 0;
+                $scope.stop();
+                $scope.volume = 0.0;
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -150,9 +151,29 @@
                 });
             }
             $scope.start = function(){
-                $scope.counter++;
-                myMedia = new Media("4khz.wav");
-                myMedia.play({ numberOfLoops: 999 });
+                try{
+                    myMedia = new Media("4khz.wav");
+                }catch(error){
+                    console.log("Keine Media-Bibliothek gefunden")
+                }
+                if(myMedia){
+                    myMedia.play({ numberOfLoops: 999 });
+                }
+            };
+            $scope.stop = function(){
+                if(myMedia){
+                    myMedia.stop();
+                }
+            };
+            $scope.volumeUp = function(){
+                if($scope.volume<1.0){
+                    $scope.volume+=0.1;
+                }
+            };
+            $scope.volumeDown = function(){
+                if($scope.volume>0.0){
+                    $scope.volume-=0.1;
+                }
             };
         });
     </script>
@@ -164,6 +185,9 @@
 <body ng-app="myApp" ng-controller="myCtrl" id="bodyID">
 <md-content>
 
+    <!--********************************************************************** -->
+    <!-- Body: Header                                                          -->
+    <!--********************************************************************** -->
     <div layout="row" layout-align="center" class="header">
         <div style="width: 60px;">
             <md-button aria-label = "New"
@@ -179,20 +203,25 @@
                        ng-click   = "info()">Info</md-button>
         </div>
     </div>
-
     <md-divider></md-divider>
 
+    <!--********************************************************************** -->
+    <!-- Body: Ohne Gehörschutz                                                -->
+    <!--********************************************************************** -->
     <div layout="row" layout-align="center" class="unters">
         <md-button ng-click="start()" class="md-primary">Start</md-button>
     </div>
-
+    <div layout="row" layout-align="center" class="unters">
+        <md-button ng-click="stop()" class="md-primary">Stop</md-button>
+    </div>
     <div layout="row" layout-align="center" class="unters">
         <md-button ng-click="volumeUp()" class="md-primary">Lauter</md-button>
     </div>
-
     <div layout="row" layout-align="center" class="unters">
         <md-button ng-click="volumeDown()" class="md-primary">Leiser</md-button>
     </div>
+    <br/><br/><br/><br/><br/>
+    <md-divider></md-divider>
 
     <div layout="row" layout-align="center">
         <p>Klicks: {{counter}}</p>
