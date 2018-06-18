@@ -118,7 +118,6 @@
     <script>
         //Media Plugin fertig laden
         document.addEventListener('deviceready', init, false);
-        var myMedia;
         var isAndroid = false;
         function init() {
             if(device.platform.toLowerCase() === "android"){
@@ -135,7 +134,9 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
-            $scope.volume = 100;
+            $scope.counter = 0;
+            $scope.media   = null;
+            $scope.volume  = 100;
             $scope.new = function(){
                 $scope.stop();
                 $scope.volume = 100;
@@ -161,37 +162,36 @@
             }
             $scope.start = function(){
                 try{
-                    //myMedia = new Media("https://www.mediacollege.com/audio/tone/files/1kHz_44100Hz_16bit_30sec.mp3");
-                    //myMedia = new Media("4khz.mp3");
-                    myMedia = new Media($scope.getCordovaPath() + "4khz.mp3", 
+                    $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
                         function(){console.log("Success")}, 
                         function(error){console.log("Error: " + JSON.stringify(error))});
                 }catch(error){
                     console.log("Keine Media-Bibliothek gefunden")
                 }
-                if(myMedia){
-                    myMedia.play({ numberOfLoops: 999 });
+                if($scope.media){
+                    $scope.media.play({ numberOfLoops: 3 });
+                    $scope.counter = 3;
                 }
             };
             $scope.stop = function(){
-                if(myMedia){
-                    myMedia.stop();
+                if($scope.media){
+                    $scope.media.stop();
                 }
             };
             $scope.volumeUp = function(){
-                if(myMedia){
+                if($scope.media){
                     if($scope.volume<100){
                         $scope.volume+=5;
                     }
-                    myMedia.setVolume("1.0");
+                    $scope.media.setVolume($scope.volume / 100);
                 }
             };
             $scope.volumeDown = function(){
-                if(myMedia){
+                if($scope.media){
                     if($scope.volume>0){
                         $scope.volume-=5;
                     }
-                    myMedia.setVolume("0.5");
+                    $scope.media.setVolume($scope.volume / 100);
                 }
             };
         });
@@ -239,11 +239,14 @@
     <div layout="row" layout-align="center" class="unters">
         <md-button ng-click="volumeDown()" class="md-primary">Leiser</md-button>
     </div>
-    <br/><br/><br/><br/><br/>
+    <br/><br/><br/>
     <md-divider></md-divider>
 
     <div layout="row" layout-align="center">
         <p>Lautstärke: {{volume / 100}}</p>
+    </div>
+    <div layout="row" layout-align="center">
+        <p>Abspiel Counter: {{counter}}</p>
     </div>
     
 </md-content>
