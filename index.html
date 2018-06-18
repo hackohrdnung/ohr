@@ -149,11 +149,23 @@
                 $mdDialog.show(confirm).then(function(){
                 });
             }
+            $scope.getCordovaPath = function() {
+                var path = window.location.pathname;
+                if(isAndroid){
+                    path = "/android_asset/www/";
+                } 
+                //path = cordova.file.applicationDirectory + 'www/'
+                //path = path.substr( path, path.length - 23 );
+                //path = path + 'audio/'+audiofile+'.mp3';
+                return 'file://' + path;
+            }
             $scope.start = function(){
                 try{
                     //myMedia = new Media("https://www.mediacollege.com/audio/tone/files/1kHz_44100Hz_16bit_30sec.mp3");
                     //myMedia = new Media("4khz.mp3");
-                    myMedia = new Media("4khz.mp3", function(){console.log("Success")}, function(error){console.log("Error: " + JSON.stringify(error))});
+                    myMedia = new Media($scope.getCordovaPath() + "4khz.mp3", 
+                        function(){console.log("Success")}, 
+                        function(error){console.log("Error: " + JSON.stringify(error))});
                 }catch(error){
                     console.log("Keine Media-Bibliothek gefunden")
                 }
