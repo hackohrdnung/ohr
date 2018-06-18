@@ -168,6 +168,15 @@
             $scope.new = function(){
                 $scope.stopCheckOS();
                 $scope.initCheckOS();
+                try{
+                    if($scope.media==null){
+                        $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
+                            function(){console.log("Success")}, 
+                            function(error){console.log("Error: " + JSON.stringify(error))});
+                    }
+                }catch(error){
+                    console.log("Keine Media-Bibliothek gefunden")
+                }
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
@@ -188,17 +197,9 @@
             }
             //1sek Sound in gewünschter Lautstärke wiedergeben
             $scope.playSound = function(volume){
-                try{
-                    if($scope.media==null){
-                        $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
-                            function(){console.log("Success")}, 
-                            function(error){console.log("Error: " + JSON.stringify(error))});
-                    }
-                }catch(error){
-                    console.log("Keine Media-Bibliothek gefunden")
-                }
                 if($scope.media){
-                    $scope.media.setVolume(volume / 100);
+                    //$scope.media.setVolume(volume / 100);
+                    $scope.media.setVolume("0.1");                    
                     $scope.media.play();
                 }
             };
@@ -220,7 +221,7 @@
                 $scope.showOSPlayBtn = false;
                 $scope.stepID        = 1;
                 $scope.initCheckOS();
-                $scope.checkOS($scope.sequenceID, 1);
+                $scope.checkOS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
             $scope.stopCheckOS = function() {
