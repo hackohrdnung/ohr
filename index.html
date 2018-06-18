@@ -161,6 +161,7 @@
         });
         app.controller("myCtrl", function($scope, $mdDialog){
             $scope.media         = null;
+            $scope.repeatID      = 0;
             $scope.sequenceID    = 0;
             $scope.stepID        = 0;
             $scope.showOSPlayBtn = true;
@@ -219,7 +220,7 @@
                 $scope.showOSPlayBtn = false;
                 $scope.stepID        = 1;
                 $scope.initCheckOS();
-                $scope.checkOS($scope.sequenceID);
+                $scope.checkOS($scope.sequenceID, 1);
             };
             //Prüfsequenz stoppen
             $scope.stopCheckOS = function() {
@@ -235,23 +236,34 @@
                 }
             };
             //Prüfsequenz durchführen
-            $scope.checkOS = function(mySequenceID) {
+            $scope.checkOS = function(mySequenceID, myRepeatID) {
                 //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
                 if($scope.sequenceID!=mySequenceID){
                     return;
                 }
+                //Wiederholung übernehmen
+                $scope.repeatID = myRepeatID;
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function() {
                     //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
                     if($scope.sequenceID!=mySequenceID){
                         return;
                     }
+                    //Rekursiv 3mal nacheinander einen Ton in der gleichen Lautstärke
+                    //ausgeben und dann die Lautstärke um den nächsten Schritt reduzieren
                     $scope.playSound($scope.volumeOS);
-                    $scope.decreaseOS();
+                    if($scope.repeatID>2){
+                        if($scope.volumeOS<=0){
+                            return;
+                        } 
+                        $scope.decreaseOS();
+                        $scope.$apply();
+                        $scope.repeatID = 0;    
+                    }
+                    $scope.repeatID++;
                     $scope.$apply();
-                    //Rekursiv die Lautstärke um den nächsten Schritt reduzieren
-                    $scope.checkOS(mySequenceID);
-                }, 2000);
+                    $scope.checkOS(mySequenceID, $scope.repeatID);
+                }, 1500);
             };
             //Lautstärke reduzieren
             $scope.decreaseOS = function() {
@@ -344,6 +356,9 @@
     </div>
     <div layout="row" layout-align="center">
         <p>SequenceID: {{sequenceID}}</p>
+    </div>
+    <div layout="row" layout-align="center">
+        <p>repeatID: {{repeatID}}</p>
     </div>
 
 </md-content>
