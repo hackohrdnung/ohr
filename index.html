@@ -148,7 +148,8 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
-            $scope.media = null;
+            $scope.media         = null;
+            $scope.showOSPlayBtn = true;
             $scope.new = function(){
                 $scope.stopCheckOS();
                 $scope.initCheckOS();
@@ -166,7 +167,7 @@
                 var path = window.location.pathname;
                 if(isAndroid){
                     path = "/android_asset/www/";
-                } 
+                }
                 return 'file://' + path;
             }
             //1sek Sound in gewünschter Lautstärke wiedergeben
@@ -186,9 +187,9 @@
                 }
             };
 
-            //------------------------------------------------------------
+            //--------------------------------------------------------------------
             //Messung ohne Gehörschutz
-            //------------------------------------------------------------
+            //--------------------------------------------------------------------
             $scope.initCheckOS = function(){
                 //Lautstärke
                 $scope.volumeOS = 100;
@@ -201,6 +202,7 @@
             //Prüfsequenz starten
             $scope.startCheckOS = function() {
                 //Initialisieren
+                $scope.showOSPlayBtn = false;
                 $scope.initCheckOS();
                 //Setzen, dass die Prüfsequenz jetzt dann grad läuft
                 $scope.isCheckingOS = true;
@@ -209,6 +211,8 @@
             };
             //Prüfsequenz stoppen
             $scope.stopCheckOS = function() {
+                //Initialisieren
+                $scope.showOSPlayBtn = true;
                 //Setzen, dass die Prüfsequenz gestoppt werden soll
                 $scope.isCheckingOS = false;
                 if($scope.media){
@@ -220,23 +224,26 @@
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function() {
                     //Soll die Prüfsequenz unterbrochen werden?
-                    if ($scope.isCheckingOS === false) {
+                    if($scope.isCheckingOS === false){
                         return;
                     }
+                    //Testton abspielen
+                    $scope.playSound($scope.volumeOS);
                     //Lautstärke um einen Schritt reduzieren
                     $scope.decreaseOS();
-                    $scope.playSound($scope.volumeOS);
                     //UI von Model aktualisieren
                     $scope.$apply();
                     //Rekursiv die Lautstärke um den nächsten Schritt reduzieren
                     $scope.checkOS();
-                }, 2000);
+                }, 6000);
             };
+            //Lautstärke reduzieren
             $scope.decreaseOS = function() {
                 $scope.volumeOS -= 10;
                 $scope.volumeOSBackup = $scope.volumeOS;
             };
-            //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten Wert zurücksetzen
+            //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
+            //Wert zurücksetzen
             $scope.onChangeSliderOS = function() {
                 $scope.volumeOS = $scope.volumeOSBackup;
             };
@@ -287,13 +294,21 @@
                    md-discrete> 
         </md-slider>
     </div>
-    
-    
-    <div layout="row" layout-align="center" class="unters">
-        <md-button ng-click="startCheckOS()" class="md-primary">Start</md-button>
+    <div layout       = "row" 
+         layout-align = "center" 
+         class        = "unters"
+         ng-if        = showOSPlayBtn>
+        <md-button ng-click="startCheckOS()" class="md-primary">
+            <i class="material-icons">play_arrow</i>
+        </md-button>
     </div>
-    <div layout="row" layout-align="center" class="unters">
-        <md-button ng-click="stopCheckOS()" class="md-primary">Stop</md-button>
+    <div layout       = "row" 
+         layout-align = "center" 
+         class        = "unters"
+         ng-if        = !showOSPlayBtn>
+        <md-button ng-click="stopCheckOS()" class="md-primary">
+            <i class="material-icons">stop</i>
+        </md-button>
     </div>
     <md-divider></md-divider>
     <div layout="row" layout-align="center">
