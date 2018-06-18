@@ -55,6 +55,8 @@
             src:                url(fontR700.woff) format("woff");
         }
         .header{
+            background-color:   #222222;
+            color:              #ffffff;
             margin:             0px;
             padding:            0px;
         }
@@ -90,12 +92,15 @@
             height:             50px;
             padding-top:        5px;
         }
+        .playButton{
+            font-size:          1.3em;
+            height:             40px;
+            margin:             0px;
+            padding:            0px;
+        }
         .title{
             padding-top:        5px;
             width:              calc(100% - 120px);
-        }
-        .unters{
-            margin-top:         10px;
         }
         h1{
             font-size:          1.3em;
@@ -110,9 +115,16 @@
             font-weight:        400;
             margin:             0px;
             padding:            0px;
-            padding-left:       10px;
-            padding-top:        12px;
+            padding-top:        30px;
+            padding-bottom:     25px;
             text-align:         left;
+        }
+        p{
+            font-size:          1.0em;
+            font-weight:        400;
+            margin:             0px;
+            padding:            0px;
+            text-align:         center;
         }
         md-slider[md-discrete]:not([disabled]):focus .md-sign,
         md-slider[md-discrete]:not([disabled]):focus .md-sign:after,
@@ -149,6 +161,8 @@
         });
         app.controller("myCtrl", function($scope, $mdDialog){
             $scope.media         = null;
+            $scope.sequenceID    = 0;
+            $scope.stepID        = 0;
             $scope.showOSPlayBtn = true;
             $scope.new = function(){
                 $scope.stopCheckOS();
@@ -156,8 +170,9 @@
             }
             $scope.info = function(){
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
-                    .title("Bitte eine Distanz von 30cm einhalten")
-                    .textContent("")
+                    .title("Info")
+                    .textContent("Bitte eine Distanz von 30cm einhalten")
+                    .clickOutsideToClose(true)
                     .targetEvent(event)
                     .ok("Schliessen")
                 $mdDialog.show(confirm).then(function(){
@@ -195,47 +210,48 @@
                 $scope.volumeOS = 100;
                 //Lautstärke Backup (Wenn der Benuzter den Slider verschiebt...)
                 $scope.volumeOSBackup = $scope.volumeOS;
-                //Läuft die Prüfseqenz gearde?
-                $scope.isCheckingOS = false;
+                //Neue Sequenz starten
+                $scope.sequenceID++;
             }
             $scope.initCheckOS();
             //Prüfsequenz starten
             $scope.startCheckOS = function() {
-                //Initialisieren
                 $scope.showOSPlayBtn = false;
+                $scope.stepID        = 1;
                 $scope.initCheckOS();
-                //Setzen, dass die Prüfsequenz jetzt dann grad läuft
-                $scope.isCheckingOS = true;
-                //Prüfsequenz durchführen
-                $scope.checkOS();
+                $scope.checkOS($scope.sequenceID);
             };
             //Prüfsequenz stoppen
             $scope.stopCheckOS = function() {
-                //Initialisieren
                 $scope.showOSPlayBtn = true;
-                //Setzen, dass die Prüfsequenz gestoppt werden soll
-                $scope.isCheckingOS = false;
+                $scope.sequenceID++;
+                if($scope.volumeMS && $scope.volumeOS!=100){
+                    $scope.stepID = 3;
+                }else{
+                    $scope.stepID = 2;
+                }
                 if($scope.media){
                     $scope.media.stop();
                 }
             };
             //Prüfsequenz durchführen
-            $scope.checkOS = function() {
+            $scope.checkOS = function(mySequenceID) {
+                //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
+                if($scope.sequenceID!=mySequenceID){
+                    return;
+                }
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function() {
-                    //Soll die Prüfsequenz unterbrochen werden?
-                    if($scope.isCheckingOS === false){
+                    //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
+                    if($scope.sequenceID!=mySequenceID){
                         return;
                     }
-                    //Testton abspielen
                     $scope.playSound($scope.volumeOS);
-                    //Lautstärke um einen Schritt reduzieren
                     $scope.decreaseOS();
-                    //UI von Model aktualisieren
                     $scope.$apply();
                     //Rekursiv die Lautstärke um den nächsten Schritt reduzieren
-                    $scope.checkOS();
-                }, 6000);
+                    $scope.checkOS(mySequenceID);
+                }, 2000);
             };
             //Lautstärke reduzieren
             $scope.decreaseOS = function() {
@@ -276,44 +292,60 @@
         </div>
     </div>
     <md-divider></md-divider>
-    <br/><br/>
 
     <!--********************************************************************** -->
     <!-- Body: Ohne Gehörschutz                                                -->
     <!--********************************************************************** -->
     <div layout="row" layout-align="center">
+        <h2>Ohne Gehörschutz</h2>
+        <h2 ng-if="showOSPlayBtn">:&nbsp;{{volumeOS}}dB</h2>
+    </div>
+    <div layout="row" layout-align="center">
         <md-slider id         = "slider" 
                    aria-label = "volumeOS"
                    ng-model   = "volumeOS"
                    ng-change  = "onChangeSliderOS()"
-                   class      = "md-primary" 
-                   style      = "width: 300px;" 
+                   class      = "md-primary slider" 
+                   style      = "width: 300px; height: 35px;" 
                    min        = "0"
                    max        = "100" 
                    step       = "10"
-                   md-discrete> 
+                   ng-disabled = "showOSPlayBtn"
+                   md-discrete
+                   active> 
         </md-slider>
     </div>
     <div layout       = "row" 
          layout-align = "center" 
-         class        = "unters"
          ng-if        = showOSPlayBtn>
-        <md-button ng-click="startCheckOS()" class="md-primary">
+        <md-button ng-click="startCheckOS()" class="md-primary playButton">
             <i class="material-icons">play_arrow</i>
         </md-button>
     </div>
     <div layout       = "row" 
          layout-align = "center" 
-         class        = "unters"
          ng-if        = !showOSPlayBtn>
-        <md-button ng-click="stopCheckOS()" class="md-primary">
+        <md-button ng-click="stopCheckOS()" class="md-primary playButton">
             <i class="material-icons">stop</i>
         </md-button>
     </div>
+    <br/>
     <md-divider></md-divider>
+    <br/>
+
+    <!--********************************************************************** -->
+    <!-- Body: Resultat                                                        -->
+    <!--********************************************************************** -->
     <div layout="row" layout-align="center">
         <p>Lautstärke: {{volumeOS}}</p>
     </div>
+    <div layout="row" layout-align="center">
+        <p>StepID: {{stepID}}</p>
+    </div>
+    <div layout="row" layout-align="center">
+        <p>SequenceID: {{sequenceID}}</p>
+    </div>
+
 </md-content>
 </body>
 
