@@ -85,6 +85,15 @@
             margin:             0px;
             width:              60px;
         }
+        .headerButton{
+            font-size:          1.3em;
+            height:             50px;
+            padding-top:        5px;
+        }
+        .title{
+            padding-top:        5px;
+            width:              calc(100% - 120px);
+        }
         .unters{
             margin-top:         50px;
         }
@@ -95,6 +104,15 @@
             padding:            0px;
             padding-top:        10px;
             text-align:         center;
+        }
+        h2{
+            font-size:          1.1em;
+            font-weight:        400;
+            margin:             0px;
+            padding:            0px;
+            padding-left:       10px;
+            padding-top:        12px;
+            text-align:         left;
         }
     </style>
     <script>
@@ -117,16 +135,24 @@
                 .primaryPalette("orange")
                 .accentPalette("cyan");
         });
-        app.controller("myCtrl", function($scope){
+        app.controller("myCtrl", function($scope, $mdDialog){
             $scope.counter = 0;
+            $scope.new = function(){
+                $scope.counter = 0;
+            }
+            $scope.info = function(){
+                var confirm =   $mdDialog.confirm({onComplete: function(){}})
+                    .title("Bitte eine Distanz von 30cm einhalten")
+                    .textContent("")
+                    .targetEvent(event)
+                    .ok("Schliessen")
+                $mdDialog.show(confirm).then(function(){
+                });
+            }
             $scope.start = function(){
                 $scope.counter++;
-                myMedia = new Media("https://www.mediacollege.com/audio/tone/files/1kHz_44100Hz_16bit_30sec.mp3");
-                myMedia.play({ numberOfLoops: 1 });
-            };
-            $scope.refresh = function(){
-                $scope.counter--;
-                myMedia.stop();
+                myMedia = new Media("4khz.wav");
+                myMedia.play({ numberOfLoops: 999 });
             };
         });
     </script>
@@ -135,26 +161,22 @@
 <!--************************************************************************** -->
 <!-- Body                                                                      -->
 <!--************************************************************************** -->
-<body ng-app="myApp" ng-controller="myCtrl">
+<body ng-app="myApp" ng-controller="myCtrl" id="bodyID">
 <md-content>
 
     <div layout="row" layout-align="center" class="header">
         <div style="width: 60px;">
-            <md-button aria-label = "Refresh"
-                       class      = "md-primary narrowButton"
-                       ng-click   = "refresh()">
-                <i class="material-icons">replay</i>
-            </md-button>
+            <md-button aria-label = "New"
+                       class      = "md-primary narrowButton headerButton"
+                       ng-click   = "new()">Neu</md-button>
         </div>
-        <div layout-align="center" style="width: calc(100% - 120px)">
+        <div layout-align="center" class="title">
             <h1>Gehörschutz Check</h1>
         </div>
         <div style="width: 60px;">
-            <md-button aria-label = "Refresh"
-                       class      = "md-primary narrowButton"
-                       ng-click   = "refresh()">
-                <i class="material-icons">help_outline</i>
-            </md-button>
+            <md-button aria-label = "Info"
+                       class      = "md-primary narrowButton headerButton"
+                       ng-click   = "info()">Info</md-button>
         </div>
     </div>
 
@@ -162,6 +184,14 @@
 
     <div layout="row" layout-align="center" class="unters">
         <md-button ng-click="start()" class="md-primary">Start</md-button>
+    </div>
+
+    <div layout="row" layout-align="center" class="unters">
+        <md-button ng-click="volumeUp()" class="md-primary">Lauter</md-button>
+    </div>
+
+    <div layout="row" layout-align="center" class="unters">
+        <md-button ng-click="volumeDown()" class="md-primary">Leiser</md-button>
     </div>
 
     <div layout="row" layout-align="center">
