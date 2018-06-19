@@ -381,7 +381,7 @@
             //********************************************************************
             // Resultat
             //********************************************************************
-            $scope.daemmwert = null;
+            $scope.dae$mmwert = null;
             $scope.calcDaemmung = function(){
 
             }
@@ -397,7 +397,7 @@
                 //MP3 Datei vorbereiten
                 try{
                     if($scope.mediaEG==null){
-                        $scope.mediaEG = new Media($scope.getCordovaPath() + "4khz10s50db.mp3", 
+                        $scope.mediaEG = new Media($scope.getCordovaPath() + "4khz10s.mp3", 
                             function(){console.log("Success")}, 
                             function(error){console.log("Error: " + JSON.stringify(error))});
                     }
