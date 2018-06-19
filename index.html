@@ -164,6 +164,7 @@
             // Allgemeine Controller Funktionen
             //********************************************************************
             $scope.media         = null;
+            $scope.mediaEG       = null;
             $scope.repeatID      = 0;
             $scope.sequenceID    = 0;
             $scope.stepID        = 0;
@@ -393,27 +394,37 @@
             //Prüfsequenz starten
             $scope.startCheckEG = function() {
                 $scope.showEGPlayBtn = false;
+                //MP3 Datei vorbereiten
+                try{
+                    if($scope.mediaEG==null){
+                        $scope.mediaEG = new Media($scope.getCordovaPath() + "4khz10s.mp3", 
+                            function(){console.log("Success")}, 
+                            function(error){console.log("Error: " + JSON.stringify(error))});
+                    }
+                }catch(error){
+                    console.log("Keine Media-Bibliothek gefunden")
+                }
                 $scope.checkEG();
             };
             //Prüfsequenz stoppen
             $scope.stopCheckEG = function() {
                 $scope.showEGPlayBtn = true;
-                if($scope.media){
-                    $scope.media.stop();
+                if($scope.mediaEG){
+                    $scope.mediaEG.stop();
                 }
             };
             //Prüfsequenz durchführen
             $scope.checkEG = function() {
                 //Ton ausgeben
-                if($scope.media){
-                    $scope.media.setVolume($scope.volumeEG / 100);
-                    $scope.media.play({ numberOfLoops: 9999 });
+                if($scope.mediaEG){
+                    $scope.mediaEG.setVolume($scope.volumeEG / 100);
+                    $scope.mediaEG.play({ numberOfLoops: 9999 });
                 }
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort die Lautstärke ändern
             $scope.onChangeSliderEG = function() {
-                if($scope.media){
-                    $scope.media.setVolume($scope.volumeEG / 100);
+                if($scope.mediaEG){
+                    $scope.mediaEG.setVolume($scope.volumeEG / 100);
                 }
             };
         });
