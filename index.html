@@ -230,7 +230,7 @@
                     $scope.media.setVolume(volume / 100);
                     setTimeout(function(){
                         $scope.media.play();
-                    }, 50);
+                    }, 100);
                 }
             };
             //********************************************************************
@@ -252,6 +252,7 @@
                         $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
                             function(){console.log("Success")}, 
                             function(error){console.log("Error: " + JSON.stringify(error))});
+                        $scope.media.setVolume(27.0); //Defaultlautstärke
                     }
                 }catch(error){
                     console.log("Keine Media-Bibliothek gefunden")
