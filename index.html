@@ -173,6 +173,19 @@
             $scope.repeatID      = 0;
             $scope.sequenceID    = 0;
             $scope.stepID        = 0;
+            $scope.dbList        = [
+                { step: -1, db: null, volume: null},
+                { step: 0,  db: 30,   volume: 0.1},
+                { step: 1,  db: 35,   volume: 0.3},
+                { step: 2,  db: 40,   volume: 0.5},
+                { step: 3,  db: 45,   volume: 0.7},
+                { step: 4,  db: 50,   volume: 1.3},
+                { step: 5,  db: 55,   volume: 2.6},
+                { step: 6,  db: 60,   volume: 4.6},
+                { step: 7,  db: 65,   volume: 7.6},
+                { step: 8,  db: 70,   volume: 14.0},
+                { step: 9,  db: 75,   volume: 27.0}
+            ];
             $scope.new = function(){
                 $scope.stopCheckOS();
                 $scope.initCheckOS();
@@ -251,7 +264,7 @@
                 $scope.showOSPlayBtn = false;
                 $scope.stepID        = 1;
                 $scope.initCheckOS();
-                $scope.volumeOS = 100;
+                $scope.volumeOS = $scope.dbList[10];
                 $scope.checkOS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
@@ -284,7 +297,7 @@
                 setTimeout(function(){
                     $scope.$apply();
                 }, 50);
-                $scope.playSound($scope.volumeOS);
+                $scope.playSound($scope.volumeOS.volume);
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function(){
                     //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
@@ -292,7 +305,7 @@
                         return;
                     }
                     if($scope.repeatID>1){
-                        if($scope.volumeOS<=0){
+                        if($scope.volumeOS.step<=0){
                             return;
                         } 
                         $scope.decreaseOS();
@@ -304,7 +317,12 @@
             };
             //Lautstärke reduzieren
             $scope.decreaseOS = function(){
-                $scope.volumeOS -= 10;
+                var actualStep  = $scope.volumeOS.step;
+                var nextStep    = $scope.volumeOS.step--;
+                if(nextStep<-1){
+                    return;
+                }
+                $scope.volumeOS = $scope.dbList[nextStep];
                 $scope.volumeOSBackup = $scope.volumeOS;
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
@@ -343,7 +361,7 @@
                 $scope.showMSPlayBtn = false;
                 $scope.stepID        = 2;
                 $scope.initCheckMS();
-                $scope.volumeMS = 100;
+                $scope.volumeMS = $scope.dbList[10];
                 $scope.checkMS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
@@ -376,7 +394,7 @@
                 setTimeout(function(){
                     $scope.$apply();
                 }, 50);
-                $scope.playSound($scope.volumeMS);
+                $scope.playSound($scope.volumeMS.volume);
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function(){
                     //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
@@ -384,7 +402,7 @@
                         return;
                     }
                     if($scope.repeatID>1){
-                        if($scope.volumeMS<=0){
+                        if($scope.volumeMS.step<=0){
                             return;
                         } 
                         $scope.decreaseMS();
@@ -396,7 +414,12 @@
             };
             //Lautstärke reduzieren
             $scope.decreaseMS = function(){
-                $scope.volumeMS -= 10;
+                var actualStep  = $scope.volumeMS.step;
+                var nextStep    = $scope.volumeMS.step--;
+                if(nextStep<-1){
+                    return;
+                }
+                $scope.volumeMS = $scope.dbList[nextStep];
                 $scope.volumeMSBackup = $scope.volumeMS;
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
@@ -412,10 +435,10 @@
                 if(!$scope.volumeOS || !$scope.volumeMS){
                     return;
                 }
-                if($scope.volumeOS>=$scope.volumeMS){
+                if($scope.volumeOS.db>=$scope.volumeMS.db){
                     $scope.daemmwert = 0;
                 }else{
-                    $scope.daemmwert = $scope.volumeMS - $scope.volumeOS;
+                    $scope.daemmwert = $scope.volumeMS.db - $scope.volumeOS.db;
                 }
             }
             //********************************************************************
@@ -496,18 +519,18 @@
     <div layout="row" layout-align="center">
         <h2>Ohne Gehörschutz:&nbsp;</h2>
         <h2 ng-if="!showOSPlayBtn || !volumeOS">... dB</h2>
-        <h2 ng-if="showOSPlayBtn && volumeOS">{{volumeOS}} dB</h2>
+        <h2 ng-if="showOSPlayBtn && volumeOS">{{volumeOS.db}} dB</h2>
     </div>
     <div layout="row" layout-align="center">
         <md-slider id         = "slider" 
                    aria-label = "volumeOS"
-                   ng-model   = "volumeOS"
+                   ng-model   = "volumeOS.db"
                    ng-change  = "onChangeSliderOS()"
                    class      = "md-primary slider" 
                    style      = "width: 300px; height: 35px;" 
-                   min        = "0"
-                   max        = "100" 
-                   step       = "10"
+                   min        = "30"
+                   max        = "75" 
+                   step       = "5"
                    ng-disabled = "showOSPlayBtn"
                    md-discrete
                    active> 
@@ -536,18 +559,18 @@
     <div layout="row" layout-align="center">
         <h2>Mit Gehörschutz:&nbsp;</h2>
         <h2 ng-if="!showMSPlayBtn || !volumeMS">... dB</h2>
-        <h2 ng-if="showMSPlayBtn && volumeMS">{{volumeMS}} dB</h2>
+        <h2 ng-if="showMSPlayBtn && volumeMS">{{volumeMS.db}} dB</h2>
     </div>
     <div layout="row" layout-align="center">
         <md-slider id          = "slider" 
                    aria-label  = "volumeMS"
-                   ng-model    = "volumeMS"
+                   ng-model    = "volumeMS.db"
                    ng-change   = "onChangeSliderMS()"
                    class       = "md-primary slider" 
                    style       = "width: 300px; height: 35px;" 
-                   min         = "0"
-                   max         = "100" 
-                   step        = "10"
+                   min         = "30"
+                   max         = "75" 
+                   step        = "5"
                    ng-disabled = "showMSPlayBtn"
                    md-discrete
                    active> 
@@ -637,10 +660,10 @@
     <div ng-if="entwMode">
         <br/>
         <div layout="row" layout-align="center">
-            <p>Lautstärke OS: {{volumeOS}}</p>
+            <p>Lautstärke OS: {{volumeOS.db}}</p>
         </div>
         <div layout="row" layout-align="center">
-            <p>Lautstärke MS: {{volumeMS}}</p>
+            <p>Lautstärke MS: {{volumeMS.db}}</p>
         </div>
         <div layout="row" layout-align="center">
             <p>StepID: {{stepID}}</p>
