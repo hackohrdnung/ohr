@@ -98,6 +98,10 @@
             margin:             0px;
             padding:            0px;
         }
+        .result{
+            padding-left:       10px; 
+            padding-right:      10px;
+        }
         .title{
             padding-top:        5px;
             width:              calc(100% - 120px);
@@ -163,6 +167,7 @@
             //********************************************************************
             // Allgemeine Controller Funktionen
             //********************************************************************
+            $scope.entwMode      = false;
             $scope.media         = null;
             $scope.mediaEG       = null;
             $scope.repeatID      = 0;
@@ -171,25 +176,42 @@
             $scope.new = function(){
                 $scope.stopCheckOS();
                 $scope.initCheckOS();
+                $scope.stopCheckMS();
+                $scope.initCheckMS();
+                $scope.daemmwert = null;
+                $scope.entwMode  = false;
             }
             $scope.info = function(){
+                var entwModeText = "Entwicklermodus";
+                if($scope.entwMode){
+                    entwModeText = "Anwendermodus";
+                }
                 var confirm =   $mdDialog.confirm({onComplete: function(){}})
                     .title("Info")
                     .textContent("Bitte eine Distanz von 30cm einhalten")
-                    .clickOutsideToClose(true)
+                    .clickOutsideToClose(false)
                     .targetEvent(event)
                     .ok("Schliessen")
+                    .cancel(entwModeText);
                 $mdDialog.show(confirm).then(function(){
+                }, function(){
+                    $scope.toggleEntwMode();
                 });
             }
-            $scope.getCordovaPath = function() {
+            $scope.toggleEntwMode = function(){
+                if($scope.entwMode){
+                    $scope.entwMode = false;
+                }else{
+                    $scope.entwMode = true;
+                }
+            }
+            $scope.getCordovaPath = function(){
                 var path = window.location.pathname;
                 if(isAndroid){
                     path = "/android_asset/www/";
                 }
                 return 'file://' + path;
             }
-            //1sek Sound in gewünschter Lautstärke wiedergeben
             $scope.playSound = function(volume){
                 if($scope.media){
                     $scope.media.setVolume(volume / 100);
@@ -204,7 +226,7 @@
             $scope.showOSPlayBtn = true;
             $scope.initCheckOS = function(){
                 //Lautstärke
-                $scope.volumeOS = 100;
+                $scope.volumeOS = null;
                 //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
                 $scope.volumeOSBackup = $scope.volumeOS;
                 //Neue Sequenz starten
@@ -229,15 +251,17 @@
                 $scope.showOSPlayBtn = false;
                 $scope.stepID        = 1;
                 $scope.initCheckOS();
+                $scope.volumeOS = 100;
                 $scope.checkOS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
             $scope.stopCheckOS = function(noStepChange){
                 $scope.showOSPlayBtn = true;
                 $scope.sequenceID++;
-                if(noStepChange==false){
-                    if($scope.volumeMS && $scope.volumeMS!=100){
+                if(!noStepChange){
+                    if($scope.volumeMS){
                         $scope.stepID = 3;
+                        $scope.calcDaemmung();
                     }else{
                         $scope.stepID = 2;
                     }
@@ -276,7 +300,7 @@
                         $scope.$apply();
                     }
                     $scope.checkOS(mySequenceID, $scope.repeatID);
-                }, 2000);
+                }, 1500);
             };
             //Lautstärke reduzieren
             $scope.decreaseOS = function(){
@@ -294,7 +318,7 @@
             $scope.showMSPlayBtn = true;
             $scope.initCheckMS = function(){
                 //Lautstärke
-                $scope.volumeMS = 100;
+                $scope.volumeMS = null;
                 //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
                 $scope.volumeMSBackup = $scope.volumeMS;
                 //Neue Sequenz starten
@@ -319,15 +343,17 @@
                 $scope.showMSPlayBtn = false;
                 $scope.stepID        = 2;
                 $scope.initCheckMS();
+                $scope.volumeMS = 100;
                 $scope.checkMS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
             $scope.stopCheckMS = function(noStepChange){
                 $scope.showMSPlayBtn = true;
                 $scope.sequenceID++;
-                if(noStepChange==false){
-                    if($scope.volumeOS && $scope.volumeOS!=100){
+                if(!noStepChange){
+                    if($scope.volumeOS){
                         $scope.stepID = 3;
+                        $scope.calcDaemmung();
                     }else{
                         $scope.stepID = 1;
                     }
@@ -366,7 +392,7 @@
                         $scope.$apply();
                     }
                     $scope.checkMS(mySequenceID, $scope.repeatID);
-                }, 2000);
+                }, 1500);
             };
             //Lautstärke reduzieren
             $scope.decreaseMS = function(){
@@ -381,9 +407,16 @@
             //********************************************************************
             // Resultat
             //********************************************************************
-            $scope.dae$mmwert = null;
+            $scope.daemmwert = null;
             $scope.calcDaemmung = function(){
-
+                if(!$scope.volumeOS || !$scope.volumeMS){
+                    return;
+                }
+                if($scope.volumeOS>=$scope.volumeMS){
+                    $scope.daemmwert = 0;
+                }else{
+                    $scope.daemmwert = $scope.volumeMS - $scope.volumeOS;
+                }
             }
             //********************************************************************
             // Messung für Eichung
@@ -461,8 +494,9 @@
     <!-- Body: Ohne Gehörschutz                                                -->
     <!--********************************************************************** -->
     <div layout="row" layout-align="center">
-        <h2>Ohne Gehörschutz</h2>
-        <h2 ng-if="showOSPlayBtn">:&nbsp;{{volumeOS}}dB</h2>
+        <h2>Ohne Gehörschutz:&nbsp;</h2>
+        <h2 ng-if="!showOSPlayBtn || !volumeOS">... dB</h2>
+        <h2 ng-if="showOSPlayBtn && volumeOS">{{volumeOS}} dB</h2>
     </div>
     <div layout="row" layout-align="center">
         <md-slider id         = "slider" 
@@ -500,19 +534,20 @@
     <!-- Body: Mit Gehörschutz                                                 -->
     <!--********************************************************************** -->
     <div layout="row" layout-align="center">
-        <h2>Mit Gehörschutz</h2>
-        <h2 ng-if="showMSPlayBtn">:&nbsp;{{volumeMS}}dB</h2>
+        <h2>Mit Gehörschutz:&nbsp;</h2>
+        <h2 ng-if="!showMSPlayBtn || !volumeMS">... dB</h2>
+        <h2 ng-if="showMSPlayBtn && volumeMS">{{volumeMS}} dB</h2>
     </div>
     <div layout="row" layout-align="center">
-        <md-slider id         = "slider" 
-                   aria-label = "volumeMS"
-                   ng-model   = "volumeMS"
-                   ng-change  = "onChangeSliderMS()"
-                   class      = "md-primary slider" 
-                   style      = "width: 300px; height: 35px;" 
-                   min        = "0"
-                   max        = "100" 
-                   step       = "10"
+        <md-slider id          = "slider" 
+                   aria-label  = "volumeMS"
+                   ng-model    = "volumeMS"
+                   ng-change   = "onChangeSliderMS()"
+                   class       = "md-primary slider" 
+                   style       = "width: 300px; height: 35px;" 
+                   min         = "0"
+                   max         = "100" 
+                   step        = "10"
                    ng-disabled = "showMSPlayBtn"
                    md-discrete
                    active> 
@@ -521,7 +556,9 @@
     <div layout       = "row" 
          layout-align = "center" 
          ng-if        = showMSPlayBtn>
-        <md-button ng-click="startCheckMS()" class="md-primary playButton">
+        <md-button ng-click    = "startCheckMS()" 
+                   ng-disabled = "volumeOS==null || stepID==1"
+                   class       = "md-primary playButton">
             <i class="material-icons">play_arrow</i>
         </md-button>
     </div>
@@ -538,74 +575,82 @@
     <!--********************************************************************** -->
     <!-- Body: Resultat                                                        -->
     <!--********************************************************************** -->
-    <div ng-if="daemmwert">
-        <div layout="column" layout-align="center" ng-if="daemmwert>=15" style="padding-left: 10px; padding-right: 10px;">
-            <h2>Dämmwert: <span style="color: green;">{{daemmwert}} dB</span></h2>
-            <p>Ihr Gehörschutz schützt Sie gut vor mittlerer Lärmbelastung bis 100 dB.</p>
+    <div layout="row" layout-align="center" class="result">
+        <h2>Dämmwert:&nbsp;</h2>
+        <h2 ng-if="stepID!=3 || daemmwert==null">... dB</h2>
+        <h2 ng-if="stepID==3 && daemmwert!=null && daemmwert>=15">
+            <span style="color: green;">{{daemmwert}} dB</span>
+        </h2>
+        <h2 ng-if="stepID==3 && daemmwert!=null && daemmwert<15">
+            <span style="color: red;">{{daemmwert}} dB</span>
+        </h2>
+    </div>
+    <div layout="row" layout-align="center" class="result">
+        <p ng-if="stepID==3 && daemmwert!=null && daemmwert>=15">Ihr Gehörschutz schützt Sie gut vor mittlerer Lärmbelastung bis 100 dB.</p>
+        <p ng-if="stepID==3 && daemmwert!=null && daemmwert<15">Ihr Gehörschutz schützt Sie nicht genügend vor Lärmbelastung. Prüfen Sie, ob der Gehörschutz richtig sitzt oder wählen Sie allenfalls ein anderes Modell.</p>
+    </div>
+
+    <!--********************************************************************** -->
+    <!-- Body: Eichung                                                         -->
+    <!--********************************************************************** -->
+    <div ng-if="entwMode">
+        <br/><br/>
+        <md-divider></md-divider>
+        <div layout="row" layout-align="center">
+            <h2>Eichung Lautstärke:&nbsp;{{volumeEG}}</h2>
         </div>
-        <div layout="column" layout-align="center" ng-if="daemmwert<15" style="padding-left: 10px; padding-right: 10px;">
-            <h2>Dämmwert: <span style="color: red;">{{daemmwert}} dB</span></h2>
-            <p>Ihr Gehörschutz schützt Sie nicht genügend vor Lärmbelastung. Prüfen Sie, ob der Gehörschutz richtig sitzt oder wählen Sie allenfalls ein anderes Modell.</p>
+        <div layout="row" layout-align="center">
+            <md-slider id         = "slider" 
+                       aria-label = "volumeEG"
+                       ng-model   = "volumeEG"
+                       ng-change  = "onChangeSliderEG()"
+                       class      = "md-primary slider" 
+                       style      = "width: 300px; height: 35px;" 
+                       min        = "0"
+                       max        = "100" 
+                       step       = "0.1"
+                       ng-disabled = "showEGPlayBtn"
+                       active> 
+            </md-slider>
+        </div>
+        <div layout       = "row" 
+            layout-align = "center" 
+            ng-if        = showEGPlayBtn>
+            <md-button ng-click="startCheckEG()" class="md-primary playButton">
+                <i class="material-icons">play_arrow</i>
+            </md-button>
+        </div>
+        <div layout       = "row" 
+            layout-align = "center" 
+            ng-if        = !showEGPlayBtn>
+            <md-button ng-click="stopCheckEG()" class="md-primary playButton">
+                <i class="material-icons">stop</i>
+            </md-button>
         </div>
         <br/><br/>
         <md-divider></md-divider>
     </div>
 
     <!--********************************************************************** -->
-    <!-- Body: Eichung                                                         -->
-    <!--********************************************************************** -->
-    <div layout="row" layout-align="center">
-        <h2>Eichung Lautstärke:&nbsp;{{volumeEG}}</h2>
-    </div>
-    <div layout="row" layout-align="center">
-        <md-slider id         = "slider" 
-                   aria-label = "volumeEG"
-                   ng-model   = "volumeEG"
-                   ng-change  = "onChangeSliderEG()"
-                   class      = "md-primary slider" 
-                   style      = "width: 300px; height: 35px;" 
-                   min        = "0"
-                   max        = "100" 
-                   step       = "0.1"
-                   ng-disabled = "showEGPlayBtn"
-                   active> 
-        </md-slider>
-    </div>
-    <div layout       = "row" 
-         layout-align = "center" 
-         ng-if        = showEGPlayBtn>
-        <md-button ng-click="startCheckEG()" class="md-primary playButton">
-            <i class="material-icons">play_arrow</i>
-        </md-button>
-    </div>
-    <div layout       = "row" 
-         layout-align = "center" 
-         ng-if        = !showEGPlayBtn>
-        <md-button ng-click="stopCheckEG()" class="md-primary playButton">
-            <i class="material-icons">stop</i>
-        </md-button>
-    </div>
-    <br/><br/>
-    <md-divider></md-divider>
-
-    <!--********************************************************************** -->
     <!-- Body: Testing                                                         -->
     <!--********************************************************************** -->
-    <br/>
-    <div layout="row" layout-align="center">
-        <p>Lautstärke OS: {{volumeOS}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>Lautstärke MS: {{volumeMS}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>StepID: {{stepID}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>SequenceID: {{sequenceID}}</p>
-    </div>
-    <div layout="row" layout-align="center">
-        <p>repeatID: {{repeatID}}</p>
+    <div ng-if="entwMode">
+        <br/>
+        <div layout="row" layout-align="center">
+            <p>Lautstärke OS: {{volumeOS}}</p>
+        </div>
+        <div layout="row" layout-align="center">
+            <p>Lautstärke MS: {{volumeMS}}</p>
+        </div>
+        <div layout="row" layout-align="center">
+            <p>StepID: {{stepID}}</p>
+        </div>
+        <div layout="row" layout-align="center">
+            <p>SequenceID: {{sequenceID}}</p>
+        </div>
+        <div layout="row" layout-align="center">
+            <p>repeatID: {{repeatID}}</p>
+        </div>
     </div>
 
 </md-content>
