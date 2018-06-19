@@ -227,9 +227,10 @@
             }
             $scope.playSound = function(volume){
                 if($scope.media){
-                    $scope.media.setVolume(volume / 100);
+                    $scope.media.setVolume(0);
                     setTimeout(function(){
                         $scope.media.play();
+                        $scope.media.setVolume(volume / 100);
                     }, 100);
                 }
             };
@@ -241,7 +242,7 @@
                 //Lautstärke
                 $scope.volumeOS = null;
                 //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
-                $scope.volumeOSBackup = $scope.dbList[10];
+                $scope.volumeOSBackup = JSON.parse(JSON.stringify($scope.dbList[10]));
                 //Neue Sequenz starten
                 $scope.sequenceID++;
                 //Repeat von vorne starten
@@ -265,7 +266,7 @@
                 $scope.showOSPlayBtn = false;
                 $scope.stepID        = 1;
                 $scope.initCheckOS();
-                $scope.volumeOS = $scope.dbList[10];
+                $scope.volumeOS = JSON.parse(JSON.stringify($scope.dbList[10]));
                 $scope.checkOS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
@@ -325,13 +326,13 @@
                 if(nextStep<-1){
                     return;
                 }
-                $scope.volumeOS = $scope.dbList[nextStep + 1];
-                $scope.volumeOSBackup = $scope.volumeOS;
+                $scope.volumeOS       = JSON.parse(JSON.stringify($scope.dbList[nextStep + 1]));
+                $scope.volumeOSBackup = JSON.parse(JSON.stringify($scope.dbList[nextStep + 1]));
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
             //Wert zurücksetzen
             $scope.onChangeSliderOS = function(){
-                $scope.volumeOS = $scope.volumeOSBackup;
+                $scope.volumeOS = JSON.parse(JSON.stringify($scope.dbList[$scope.volumeOS.step + 1]));
             };
             //********************************************************************
             // Messung mit Gehörschutz
@@ -341,7 +342,7 @@
                 //Lautstärke
                 $scope.volumeMS = null;
                 //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
-                $scope.volumeMSBackup = $scope.dbList[10];
+                $scope.volumeMSBackup = JSON.parse(JSON.stringify($scope.dbList[10]));
                 //Neue Sequenz starten
                 $scope.sequenceID++;
                 //Repeat von vorne starten
@@ -364,7 +365,7 @@
                 $scope.showMSPlayBtn = false;
                 $scope.stepID        = 2;
                 $scope.initCheckMS();
-                $scope.volumeMS = $scope.dbList[10];
+                $scope.volumeMS = JSON.parse(JSON.stringify($scope.dbList[10]));
                 $scope.checkMS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
@@ -424,13 +425,13 @@
                 if(nextStep<-1){
                     return;
                 }
-                $scope.volumeMS = $scope.dbList[nextStep + 1];
-                $scope.volumeMSBackup = $scope.volumeMS;
+                $scope.volumeMS       = JSON.parse(JSON.stringify($scope.dbList[nextStep + 1]));
+                $scope.volumeMSBackup = JSON.parse(JSON.stringify($scope.dbList[nextStep + 1]));
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
             //Wert zurücksetzen
             $scope.onChangeSliderMS = function(){
-                $scope.volumeMS = $scope.volumeMSBackup;
+                $scope.volumeMS = JSON.parse(JSON.stringify($scope.dbList[$scope.volumeMS.step + 1]));
             };
             //********************************************************************
             // Resultat
@@ -478,8 +479,9 @@
             $scope.checkEG = function() {
                 //Ton ausgeben
                 if($scope.mediaEG){
+                    $scope.mediaEG.setVolume(0);
+                    $scope.mediaEG.play();
                     $scope.mediaEG.setVolume($scope.volumeEG / 100);
-                    $scope.mediaEG.play({ numberOfLoops: 9999 });
                 }
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort die Lautstärke ändern
