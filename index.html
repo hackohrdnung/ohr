@@ -241,7 +241,7 @@
                 //Lautstärke
                 $scope.volumeOS = null;
                 //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
-                $scope.volumeOSBackup = $scope.volumeOS;
+                $scope.volumeOSBackup = $scope.dbList[10];
                 //Neue Sequenz starten
                 $scope.sequenceID++;
                 //Repeat von vorne starten
@@ -297,6 +297,9 @@
                 setTimeout(function(){
                     $scope.$apply();
                 }, 50);
+                if(!$scope.volumeOS){
+                    return;
+                }
                 $scope.playSound($scope.volumeOS.volume);
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function(){
@@ -305,7 +308,7 @@
                         return;
                     }
                     if($scope.repeatID>1){
-                        if($scope.volumeOS.step<=0){
+                        if(!$scope.volumeOS || $scope.volumeOS.step<=0){
                             return;
                         } 
                         $scope.decreaseOS();
@@ -317,12 +320,11 @@
             };
             //Lautstärke reduzieren
             $scope.decreaseOS = function(){
-                var actualStep  = $scope.volumeOS.step;
-                var nextStep    = $scope.volumeOS.step--;
+                var nextStep = $scope.volumeOS.step - 1;
                 if(nextStep<-1){
                     return;
                 }
-                $scope.volumeOS = $scope.dbList[nextStep];
+                $scope.volumeOS = $scope.dbList[nextStep + 1];
                 $scope.volumeOSBackup = $scope.volumeOS;
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
@@ -338,7 +340,7 @@
                 //Lautstärke
                 $scope.volumeMS = null;
                 //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
-                $scope.volumeMSBackup = $scope.volumeMS;
+                $scope.volumeMSBackup = $scope.dbList[10];
                 //Neue Sequenz starten
                 $scope.sequenceID++;
                 //Repeat von vorne starten
@@ -394,6 +396,9 @@
                 setTimeout(function(){
                     $scope.$apply();
                 }, 50);
+                if(!$scope.volumeMS){
+                    return;
+                }
                 $scope.playSound($scope.volumeMS.volume);
                 //Rekursiv die Lautstärke schrittweise reduzieren
                 setTimeout(function(){
@@ -402,7 +407,7 @@
                         return;
                     }
                     if($scope.repeatID>1){
-                        if($scope.volumeMS.step<=0){
+                        if(!$scope.volumeMS || $scope.volumeMS.step<=0){
                             return;
                         } 
                         $scope.decreaseMS();
@@ -414,12 +419,11 @@
             };
             //Lautstärke reduzieren
             $scope.decreaseMS = function(){
-                var actualStep  = $scope.volumeMS.step;
-                var nextStep    = $scope.volumeMS.step--;
+                var nextStep = $scope.volumeMS.step - 1;
                 if(nextStep<-1){
                     return;
                 }
-                $scope.volumeMS = $scope.dbList[nextStep];
+                $scope.volumeMS = $scope.dbList[nextStep + 1];
                 $scope.volumeMSBackup = $scope.volumeMS;
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
