@@ -64,7 +64,7 @@
             font-family:        "Material Icons";
             font-weight:        normal;
             font-style:         normal;
-            font-size:          36px; 
+            font-size:          48px; 
             display:            inline-block;
             line-height:        1;
             text-transform:     none;
@@ -94,7 +94,7 @@
         }
         .playButton{
             font-size:          1.3em;
-            height:             40px;
+            height:             50px;
             margin:             0px;
             padding:            0px;
         }
@@ -117,7 +117,7 @@
             padding:            0px;
             padding-top:        30px;
             padding-bottom:     25px;
-            text-align:         left;
+            text-align:         center;
         }
         p{
             font-size:          1.0em;
@@ -160,11 +160,13 @@
                 .accentPalette("cyan");
         });
         app.controller("myCtrl", function($scope, $mdDialog){
+            //********************************************************************
+            // Allgemeine Controller Funktionen
+            //********************************************************************
             $scope.media         = null;
             $scope.repeatID      = 0;
             $scope.sequenceID    = 0;
             $scope.stepID        = 0;
-            $scope.showOSPlayBtn = true;
             $scope.new = function(){
                 $scope.stopCheckOS();
                 $scope.initCheckOS();
@@ -195,17 +197,19 @@
                     }, 50);
                 }
             };
-
-            //--------------------------------------------------------------------
-            //Messung ohne Gehörschutz
-            //--------------------------------------------------------------------
+            //********************************************************************
+            // Messung ohne Gehörschutz
+            //********************************************************************
+            $scope.showOSPlayBtn = true;
             $scope.initCheckOS = function(){
                 //Lautstärke
                 $scope.volumeOS = 100;
-                //Lautstärke Backup (Wenn der Benuzter den Slider verschiebt...)
+                //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
                 $scope.volumeOSBackup = $scope.volumeOS;
                 //Neue Sequenz starten
                 $scope.sequenceID++;
+                //Repeat von vorne starten
+                $scope.repeatID = 0;
                 //MP3 Datei vorbereiten
                 try{
                     if($scope.media==null){
@@ -219,27 +223,30 @@
             }
             $scope.initCheckOS();
             //Prüfsequenz starten
-            $scope.startCheckOS = function() {
+            $scope.startCheckOS = function(){
+                $scope.stopCheckMS(true);
                 $scope.showOSPlayBtn = false;
                 $scope.stepID        = 1;
                 $scope.initCheckOS();
                 $scope.checkOS($scope.sequenceID, 0);
             };
             //Prüfsequenz stoppen
-            $scope.stopCheckOS = function() {
+            $scope.stopCheckOS = function(noStepChange){
                 $scope.showOSPlayBtn = true;
                 $scope.sequenceID++;
-                if($scope.volumeMS && $scope.volumeOS!=100){
-                    $scope.stepID = 3;
-                }else{
-                    $scope.stepID = 2;
+                if(noStepChange==false){
+                    if($scope.volumeMS && $scope.volumeMS!=100){
+                        $scope.stepID = 3;
+                    }else{
+                        $scope.stepID = 2;
+                    }
                 }
                 if($scope.media){
                     $scope.media.stop();
                 }
             };
             //Prüfsequenz durchführen
-            $scope.checkOS = function(mySequenceID, myRepeatID) {
+            $scope.checkOS = function(mySequenceID, myRepeatID){
                 //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
                 if($scope.sequenceID!=mySequenceID){
                     return;
@@ -261,24 +268,153 @@
                     }
                     if($scope.repeatID>2){
                         if($scope.volumeOS<=0){
-                                    return;
+                            return;
                         } 
                         $scope.decreaseOS();
                         $scope.repeatID = 0;
-                        $scope.$apply();    
+                        $scope.$apply();
                     }
                     $scope.checkOS(mySequenceID, $scope.repeatID);
                 }, 2000);
             };
             //Lautstärke reduzieren
-            $scope.decreaseOS = function() {
+            $scope.decreaseOS = function(){
                 $scope.volumeOS -= 10;
                 $scope.volumeOSBackup = $scope.volumeOS;
             };
             //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
             //Wert zurücksetzen
-            $scope.onChangeSliderOS = function() {
+            $scope.onChangeSliderOS = function(){
                 $scope.volumeOS = $scope.volumeOSBackup;
+            };
+            //********************************************************************
+            // Messung mit Gehörschutz
+            //********************************************************************
+            $scope.showMSPlayBtn = true;
+            $scope.initCheckMS = function(){
+                //Lautstärke
+                $scope.volumeMS = 100;
+                //Lautstärke Backup (wenn der Benuzter den Slider verschiebt...)
+                $scope.volumeMSBackup = $scope.volumeMS;
+                //Neue Sequenz starten
+                $scope.sequenceID++;
+                //Repeat von vorne starten
+                $scope.repeatID = 0;
+                //MP3 Datei vorbereiten
+                try{
+                    if($scope.media==null){
+                        $scope.media = new Media($scope.getCordovaPath() + "4khz.mp3", 
+                            function(){console.log("Success")}, 
+                            function(error){console.log("Error: " + JSON.stringify(error))});
+                    }
+                }catch(error){
+                    console.log("Keine Media-Bibliothek gefunden")
+                }
+            }
+            $scope.initCheckMS();
+            //Prüfsequenz starten
+            $scope.startCheckMS = function(){
+                $scope.stopCheckOS(true);
+                $scope.showMSPlayBtn = false;
+                $scope.stepID        = 2;
+                $scope.initCheckMS();
+                $scope.checkMS($scope.sequenceID, 0);
+            };
+            //Prüfsequenz stoppen
+            $scope.stopCheckMS = function(noStepChange){
+                $scope.showMSPlayBtn = true;
+                $scope.sequenceID++;
+                if(noStepChange==false){
+                    if($scope.volumeOS && $scope.volumeOS!=100){
+                        $scope.stepID = 3;
+                    }else{
+                        $scope.stepID = 1;
+                    }
+                }
+                if($scope.media){
+                    $scope.media.stop();
+                }
+            };
+            //Prüfsequenz durchführen
+            $scope.checkMS = function(mySequenceID, myRepeatID){
+                //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
+                if($scope.sequenceID!=mySequenceID){
+                    return;
+                }
+                //Wiederholung übernehmen
+                $scope.repeatID = myRepeatID;
+                //Rekursiv 3mal nacheinander einen Ton in der gleichen Lautstärke
+                //ausgeben und dann die Lautstärke um den nächsten Schritt reduzieren
+                $scope.repeatID++;
+                setTimeout(function(){
+                    $scope.$apply();
+                }, 50);
+                $scope.playSound($scope.volumeMS);
+                //Rekursiv die Lautstärke schrittweise reduzieren
+                setTimeout(function(){
+                    //Prüfe, ob in aktueller Sequenz oder ob noch in alter Sequenz
+                    if($scope.sequenceID!=mySequenceID){
+                        return;
+                    }
+                    if($scope.repeatID>2){
+                        if($scope.volumeMS<=0){
+                            return;
+                        } 
+                        $scope.decreaseMS();
+                        $scope.repeatID = 0;
+                        $scope.$apply();
+                    }
+                    $scope.checkMS(mySequenceID, $scope.repeatID);
+                }, 2000);
+            };
+            //Lautstärke reduzieren
+            $scope.decreaseMS = function(){
+                $scope.volumeMS -= 10;
+                $scope.volumeMSBackup = $scope.volumeMS;
+            };
+            //Wenn der Benutzer den Slider verschiebt, dann sofort auf den alten 
+            //Wert zurücksetzen
+            $scope.onChangeSliderMS = function(){
+                $scope.volumeMS = $scope.volumeMSBackup;
+            };
+            //********************************************************************
+            // Resultat
+            //********************************************************************
+            $scope.daemmwert = null;
+            $scope.calcDaemmung = function(){
+
+            }
+            //********************************************************************
+            // Messung für Eichung
+            //********************************************************************
+            //Volumen Eichung
+            $scope.volumeEG      = 50.0;
+            $scope.showEGPlayBtn = true;
+            //Prüfsequenz starten
+            $scope.startCheckEG = function() {
+                $scope.showEGPlayBtn = false;
+                $scope.checkEG();
+            };
+            //Prüfsequenz stoppen
+            $scope.stopCheckEG = function() {
+                $scope.showEGPlayBtn = true;
+                if($scope.media){
+                    $scope.media.stop();
+                }
+            };
+            //Prüfsequenz durchführen
+            $scope.checkEG = function() {
+                //Ton ausgeben
+                if($scope.media){
+                    $scope.media.setVolume($scope.volumeEG / 100);
+                    $scope.media.play({ numberOfLoops: 9999 });
+                }
+            };
+            //Wenn der Benutzer den Slider verschiebt, dann sofort die Lautstärke ändern
+            $scope.onChangeSliderEG = function() {
+                if($scope.media){
+                    $scope.media.setVolume($scope.volumeEG / 100);
+                }
             };
         });
     </script>
@@ -346,15 +482,110 @@
             <i class="material-icons">stop</i>
         </md-button>
     </div>
-    <br/>
+    <br/><br/>
     <md-divider></md-divider>
-    <br/>
+
+    <!--********************************************************************** -->
+    <!-- Body: Mit Gehörschutz                                                 -->
+    <!--********************************************************************** -->
+    <div layout="row" layout-align="center">
+        <h2>Mit Gehörschutz</h2>
+        <h2 ng-if="showMSPlayBtn">:&nbsp;{{volumeMS}}dB</h2>
+    </div>
+    <div layout="row" layout-align="center">
+        <md-slider id         = "slider" 
+                   aria-label = "volumeMS"
+                   ng-model   = "volumeMS"
+                   ng-change  = "onChangeSliderMS()"
+                   class      = "md-primary slider" 
+                   style      = "width: 300px; height: 35px;" 
+                   min        = "0"
+                   max        = "100" 
+                   step       = "10"
+                   ng-disabled = "showMSPlayBtn"
+                   md-discrete
+                   active> 
+        </md-slider>
+    </div>
+    <div layout       = "row" 
+         layout-align = "center" 
+         ng-if        = showMSPlayBtn>
+        <md-button ng-click="startCheckMS()" class="md-primary playButton">
+            <i class="material-icons">play_arrow</i>
+        </md-button>
+    </div>
+    <div layout       = "row" 
+         layout-align = "center" 
+         ng-if        = !showMSPlayBtn>
+        <md-button ng-click="stopCheckMS()" class="md-primary playButton">
+            <i class="material-icons">stop</i>
+        </md-button>
+    </div>
+    <br/><br/>
+    <md-divider></md-divider>
 
     <!--********************************************************************** -->
     <!-- Body: Resultat                                                        -->
     <!--********************************************************************** -->
+    <div ng-if="daemmwert">
+        <div layout="column" layout-align="center" ng-if="daemmwert>=15" style="padding-left: 10px; padding-right: 10px;">
+            <h2>Dämmwert: <span style="color: green;">{{daemmwert}} dB</span></h2>
+            <p>Ihr Gehörschutz schützt Sie gut vor mittlerer Lärmbelastung bis 100 dB.</p>
+        </div>
+        <div layout="column" layout-align="center" ng-if="daemmwert<15" style="padding-left: 10px; padding-right: 10px;">
+            <h2>Dämmwert: <span style="color: red;">{{daemmwert}} dB</span></h2>
+            <p>Ihr Gehörschutz schützt Sie nicht genügend vor Lärmbelastung. Prüfen Sie, ob der Gehörschutz richtig sitzt oder wählen Sie allenfalls ein anderes Modell.</p>
+        </div>
+        <br/><br/>
+        <md-divider></md-divider>
+    </div>
+
+    <!--********************************************************************** -->
+    <!-- Body: Eichung                                                         -->
+    <!--********************************************************************** -->
     <div layout="row" layout-align="center">
-        <p>Lautstärke: {{volumeOS}}</p>
+        <h2>Eichung Lautstärke:&nbsp;{{volumeEG}}</h2>
+    </div>
+    <div layout="row" layout-align="center">
+        <md-slider id         = "slider" 
+                   aria-label = "volumeEG"
+                   ng-model   = "volumeEG"
+                   ng-change  = "onChangeSliderEG()"
+                   class      = "md-primary slider" 
+                   style      = "width: 300px; height: 35px;" 
+                   min        = "0"
+                   max        = "100" 
+                   step       = "0.1"
+                   ng-disabled = "showEGPlayBtn"
+                   active> 
+        </md-slider>
+    </div>
+    <div layout       = "row" 
+         layout-align = "center" 
+         ng-if        = showEGPlayBtn>
+        <md-button ng-click="startCheckEG()" class="md-primary playButton">
+            <i class="material-icons">play_arrow</i>
+        </md-button>
+    </div>
+    <div layout       = "row" 
+         layout-align = "center" 
+         ng-if        = !showEGPlayBtn>
+        <md-button ng-click="stopCheckEG()" class="md-primary playButton">
+            <i class="material-icons">stop</i>
+        </md-button>
+    </div>
+    <br/><br/>
+    <md-divider></md-divider>
+
+    <!--********************************************************************** -->
+    <!-- Body: Testing                                                         -->
+    <!--********************************************************************** -->
+    <br/>
+    <div layout="row" layout-align="center">
+        <p>Lautstärke OS: {{volumeOS}}</p>
+    </div>
+    <div layout="row" layout-align="center">
+        <p>Lautstärke MS: {{volumeMS}}</p>
     </div>
     <div layout="row" layout-align="center">
         <p>StepID: {{stepID}}</p>
